@@ -33,7 +33,7 @@ public class NGrinderSecurityManager extends SecurityManager {
 	private static final String NGRINDER_DEFAULT_FOLDER = ".ngrinder";
 
 	private String workDirectory = System.getProperty("user.dir");
-	private String userHome = "";
+	private String controllerHomeDir = "";
 
 	private String agentExecDirectory = System.getProperty("ngrinder.exec.path", workDirectory);
 	private String javaHomeDirectory = System.getenv("JAVA_HOME");
@@ -54,12 +54,12 @@ public class NGrinderSecurityManager extends SecurityManager {
 	}
 
 	void init() {
-		userHome = resolveUserHome();
+		this.controllerHomeDir = resolveControllerHomeDir();
 		this.initAccessOfDirectories();
 		this.initAccessOfHosts();
 	}
 
-	private String resolveUserHome() {
+	private String resolveControllerHomeDir() {
 		String userHomeFromEnv = System.getenv("NGRINDER_HOME");
 		String userHomeFromProperty = System.getProperty("ngrinder.home");
 		String userHome = StringUtils.defaultIfEmpty(userHomeFromProperty, userHomeFromEnv);
@@ -70,7 +70,7 @@ public class NGrinderSecurityManager extends SecurityManager {
 		} else if (StringUtils.startsWith(userHome, "." + File.separator)) {
 			userHome = System.getProperty("user.dir");
 		}
-		return userHome;
+		return userHome + File.separator + NGRINDER_DEFAULT_FOLDER;
 	}
 
 	/**
@@ -211,16 +211,16 @@ public class NGrinderSecurityManager extends SecurityManager {
 
 	@Override
 	public void checkRead(String file) {
-		if (file != null && file.contains("database.conf")) {
-			throw new SecurityException("File Read access on database.conf is not allowed.");
+		if (file != null) {
+			this.nGrinderHomeReadAllowed(file);
 		}
 		// fileAccessReadAllowed(file);
 	}
 
 	@Override
 	public void checkRead(String file, Object context) {
-		if (file != null && file.contains("database.conf")) {
-			throw new SecurityException("File Read access on database.conf is not allowed.");
+		if (file != null) {
+			this.nGrinderHomeReadAllowed(file);
 		}
 	}
 
@@ -241,6 +241,20 @@ public class NGrinderSecurityManager extends SecurityManager {
 	@Override
 	public void checkExec(String cmd) {
 		throw new SecurityException("Cmd execution of " + cmd + " is not allowed.");
+	}
+
+	/**
+	 * File read access is allowed on only user work directory when access ngrinder home folder
+	 *
+	 * @param file file path
+	 */
+	private void nGrinderHomeReadAllowed(String file) {
+		String filePath = normalize(file, workDirectory);
+		if (filePath != null && filePath.startsWith(this.controllerHomeDir)) {
+			if (!filePath.startsWith(workDirectory) && !filePath.startsWith(this.controllerHomeDir + getTempDirectoryPath())) {
+				throw new SecurityException("File Read access on " + file + "(" + filePath + ") is not allowed.");
+			}
+		}
 	}
 
 	/**

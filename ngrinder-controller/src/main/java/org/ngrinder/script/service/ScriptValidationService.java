@@ -118,7 +118,7 @@ public class ScriptValidationService extends AbstractScriptValidationService {
 			String path = config.getHome().getDirectory().getAbsolutePath();
 			for (String each : readLines) {
 				if (!each.startsWith("*sys-package-mgr")) {
-					each = each.replace(path, "${NGRINDER_HOME}");
+					// each = each.replace(path, "${NGRINDER_HOME}");
 					output.append(each).append("\n");
 				}
 			}
