@@ -13,6 +13,8 @@
  */
 package org.ngrinder.sm;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.io.File;
 import java.io.FileDescriptor;
 import java.net.InetAddress;
@@ -28,8 +30,10 @@ import java.util.List;
  * @since 3.0
  */
 public class NGrinderSecurityManager extends SecurityManager {
+	private static final String NGRINDER_DEFAULT_FOLDER = ".ngrinder";
 
 	private String workDirectory = System.getProperty("user.dir");
+	private String userHome = "";
 
 	private String agentExecDirectory = System.getProperty("ngrinder.exec.path", workDirectory);
 	private String javaHomeDirectory = System.getenv("JAVA_HOME");
@@ -50,9 +54,25 @@ public class NGrinderSecurityManager extends SecurityManager {
 	}
 
 	void init() {
+		userHome = resolveUserHome();
 		this.initAccessOfDirectories();
 		this.initAccessOfHosts();
 	}
+
+	private String resolveUserHome() {
+		String userHomeFromEnv = System.getenv("NGRINDER_HOME");
+		String userHomeFromProperty = System.getProperty("ngrinder.home");
+		String userHome = StringUtils.defaultIfEmpty(userHomeFromProperty, userHomeFromEnv);
+		if (StringUtils.isEmpty(userHome)) {
+			userHome = System.getProperty("user.home");
+		} else if (StringUtils.startsWith(userHome, "~" + File.separator)) {
+			userHome = System.getProperty("user.home");
+		} else if (StringUtils.startsWith(userHome, "." + File.separator)) {
+			userHome = System.getProperty("user.dir");
+		}
+		return userHome;
+	}
+
 	/**
 	 * Set default accessed of directories. <br>
 	 */
