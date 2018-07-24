@@ -21,7 +21,6 @@ import java.net.InetAddress;
  * This allows followings.
  * <p/>
  * <ul>
- * <li>cmd execution</li>
  * <li>multicast</li>
  * <li>tcp connection unspecified address</li>
  * </ul>
@@ -29,10 +28,6 @@ import java.net.InetAddress;
  * @since 3.4.2
  */
 public class NGrinderLightSecurityManager extends NGrinderSecurityManager {
-
-	@Override
-	public void checkExec(String cmd) {
-	}
 
 	@Override
 	public void checkMulticast(InetAddress maddr) {
