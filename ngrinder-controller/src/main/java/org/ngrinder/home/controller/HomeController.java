@@ -128,6 +128,7 @@ public class HomeController extends BaseController implements ControllerConstant
 				// set local language
 				setLanguage(getCurrentUser().getUserLanguage(), response, request);
 				setLoginPageDate(model);
+				setLoginRequiredAttributes(model);
 				role = user.getRole();
 			} catch (AuthenticationCredentialsNotFoundException e) {
 				return "login";
@@ -253,9 +254,7 @@ public class HomeController extends BaseController implements ControllerConstant
 	@RequestMapping(value = "/login")
 	public String login(ModelMap model) {
 		setLoginPageDate(model);
-		model.addAttribute("signUpEnabled", getConfig().isSignUpEnabled());
-		final String defaultLang = getConfig().getControllerProperties().getProperty(ControllerConstants.PROP_CONTROLLER_DEFAULT_LANG);
-		model.addAttribute("defaultLang", defaultLang);
+		setLoginRequiredAttributes(model);
 		try {
 			getCurrentUser();
 		} catch (Exception e) {
@@ -264,6 +263,12 @@ public class HomeController extends BaseController implements ControllerConstant
 		}
 		model.clear();
 		return "redirect:/";
+	}
+
+	private void setLoginRequiredAttributes(ModelMap model) {
+		model.addAttribute("signUpEnabled", getConfig().isSignUpEnabled());
+		final String defaultLang = getConfig().getControllerProperties().getProperty(ControllerConstants.PROP_CONTROLLER_DEFAULT_LANG);
+		model.addAttribute("defaultLang", defaultLang);
 	}
 
 	private void setLoginPageDate(ModelMap model) {
